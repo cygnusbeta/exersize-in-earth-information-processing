@@ -1,0 +1,7 @@
+.*
+!.gitignore
+
+*.docx
+*.xlsx
+*.pdf
+*.lnk
