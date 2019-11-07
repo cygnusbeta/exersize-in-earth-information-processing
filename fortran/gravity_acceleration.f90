@@ -1,6 +1,7 @@
 program test
     implicit none
-    real :: Gc = 6.67408e-11, M = 5.972 * 10 ** 24, R = 6371e3, g
+    real, parameter :: Gc = 6.67408e-11, M = 5.972 * 10 ** 24, R = 6371e3
+    real :: g
     print *, '万有引力定数 G =', Gc
     print *, '地球質量 M =', M
     print *, '地球半径 R =', R
