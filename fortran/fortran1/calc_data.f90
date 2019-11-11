@@ -1,7 +1,7 @@
 program calc
     implicit none
     integer i
-    integer, parameter :: im = 32, jm = 1
+    integer, parameter :: im = 32, jm = 1, sum
     integer, dimension(im, jm) :: tall
     integer, dimension(im, jm) :: hand
     integer, dimension(im, jm) :: foot
@@ -16,5 +16,8 @@ program calc
     write(*,*) hand
     write(*,*) foot
 
-    
+    sum = 0
+    do i = 1, n
+        sum = sum + tall(i, 1)
+    end do
 end program calc
