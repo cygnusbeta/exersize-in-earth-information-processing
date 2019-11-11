@@ -3,7 +3,7 @@ program temp1
     implicit none
     integer, parameter :: nm = 12
     integer :: i
-    real :: mean, sum = 0
+    real :: mean, sum
     real, dimension (nm) :: temp
 
     open (11, file = '../fortran2/temp.txt', status = 'old')
@@ -14,10 +14,11 @@ program temp1
     close (11)
 
     ! Annual avarage of temperature
+    sum=0.0
     do i = 1, nm
         sum = sum + temp(i);
     end do
-    mean = sum / nm;
+    mean = sum / real(nm);
     print *, 'mean = ', mean
 
     stop
