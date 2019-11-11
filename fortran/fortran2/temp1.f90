@@ -1,9 +1,8 @@
 program temp1
-
     implicit none
     integer, parameter :: nm = 12
     integer :: i
-    real :: mean, sum
+    real :: mean, sum_mean, sum_2nd_moment, second_moment, var, sd
     real, dimension (nm) :: temp
 
     open (11, file = '../fortran2/temp.txt', status = 'old')
@@ -13,15 +12,25 @@ program temp1
     end do
     close (11)
 
-    ! Annual avarage of temperature
-    sum=0.0
+    !    Annual avarage of temperature
+    sum_mean = 0.0
     do i = 1, nm
-        sum = sum + temp(i);
+        sum_mean = sum_mean + temp(i);
     end do
-    mean = sum / real(nm);
+    mean = sum_mean / real(nm);
     print *, 'mean = ', mean
 
-    stop
+    !    Standard deviation
+    sum_2nd_moment = 0.0
+    do i = 1, nm
+        sum_2nd_moment = sum_2nd_moment + temp(i) ** 2;
+    end do
+    second_moment = sum_2nd_moment / real(nm);
+    var = second_moment - mean ** 2
+    !    print *, 'var = ', var
+    sd = sqrt(var)
+    print *, 'sd = ', sd
 
+    stop
 end program temp1
 
