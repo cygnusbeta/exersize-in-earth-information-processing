@@ -61,7 +61,7 @@ program temp1
     print *, 'cov = ', cov
 
     do k = 1, nk
-!        a
+!        a, b, rho, r ** 2, r
         if (k == 3) then
             k_plus_1 = 1
         else
