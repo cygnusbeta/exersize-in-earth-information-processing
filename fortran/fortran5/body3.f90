@@ -144,7 +144,7 @@ program temp1
 
         r2_mul(k) = 1.0 - s_e(k) / s_t(k)
         r_mul(k) = sqrt(r2_mul(k))
-        r2_mul_adjusted(k) = 1.0 - ((s_e(k) / (np - 2 - 1)) / (s_t(k) / (np - 1)))
+        r2_mul_adjusted(k) = 1.0 - ((s_e(k) / real(np - 2 - 1)) / (s_t(k) / real(np - 1)))
 
 !        x1 y: x1x2 rho(k)
 !        x2 x1: x2x3 rho(k_plus_1)
