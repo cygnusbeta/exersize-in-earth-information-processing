@@ -160,6 +160,9 @@ program temp1
     print *, ' (y = y: 手の大きさ, x1 = z: 足の大きさ, x2 = x: 身長),'
     print *, ' (y = z: 足の大きさ, x1 = x: 身長, x2 = y: 手の大きさ)]'
     print *, 'a_mul = ', a_mul
+    do k = 1, nk
+        print *, 'a_mul(', k, ', *, *) = ', a_mul(k, :)
+    end do
     print *, 'b_mul = ', b_mul
     print *, 'c = ', c
     print *, 's = ', s
@@ -168,6 +171,7 @@ program temp1
     print *, 's_t = ', s_t
     print *, 's_e = ', s_e
     print *, 'r2_mul = ', r2_mul
+    print *, 'r_mul = ', r_mul
     print *, 'r2_mul_adjusted = ', r2_mul_adjusted
     print *, 'rho_par: ρ_(x1 y, x2) = ', rho_par
 
