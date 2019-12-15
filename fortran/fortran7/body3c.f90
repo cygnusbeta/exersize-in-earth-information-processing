@@ -7,8 +7,9 @@ program temp1
     real :: sum_ave, sum_2nd_moment, sum_cov, cov_, x_minus_ave_1, x_minus_ave_2, sum_y_f, var, f_i, sum_s_e
     real, dimension (nk, 2) :: a_mul, c, lambda ! lambda: [k, λ_1,2]
     real, dimension (nk, 2, 2) :: s, s_inv, varcov, z ! z: [k, λ_1,2, z_1,2]
+    real, dimension (3, 3) :: varcov_3d
 
-    open (11, file = '../fortran6/body.csv', status = 'old')
+    open (11, file = '../fortran7/body.csv', status = 'old')
     do i = 1, np
         read (11, *) (x(i, k), k = 1, nk)
     end do
@@ -205,5 +206,75 @@ program temp1
         end do
     end do
 
+    print *, ''
+    print *, '- multivariate pca (標準化なし) -'
+    print *, '(x: 身長, y: 手の大きさ, z: 足の大きさ)'
+!    print *, 'np', np
+!    print *, 'real(np - 1.0)', real(np - 1.0)
+!    print *, 'std', std
+!    print *, 'nk', nk
+    varcov_3d(1, 1) = std(1) ** 2 * real(np) / real(np - 1.0)
+    varcov_3d(2, 1) = cov(1) * real(np) / real(np - 1.0)
+    varcov_3d(3, 1) = cov(3) * real(np) / real(np - 1.0)
+    varcov_3d(2, 2) = std(2) ** 2 * real(np) / real(np - 1.0)
+    varcov_3d(3, 2) = cov(2) * real(np) / real(np - 1.0)
+    varcov_3d(3, 3) = std(3) ** 2 * real(np) / real(np - 1.0)
+    varcov_3d(1, 2) = varcov_3d(2, 1)
+    varcov_3d(1, 3) = varcov_3d(3, 1)
+    varcov_3d(2, 3) = varcov_3d(3, 2)
+
+    call multivariate_pca(varcov_3d)
+
     stop
+
+contains
+    subroutine multivariate_pca(varcov_3d_intent)
+        implicit none
+        integer :: o, l, m, n
+        real :: y_len
+        real, dimension (3) :: lambda_mul
+        real, dimension (3, 3) :: ev_mul, varcov_3d_sub
+        real, dimension (3, 3), intent(in) :: varcov_3d_intent
+        real, dimension (3) :: u_, y
+
+        u_(1) = 1.0
+        u_(2) = 0.0
+        u_(3) = 0.0
+        varcov_3d_sub = varcov_3d_intent
+
+        do o = 1, 3
+            do l = 1, 20
+                y(1) = varcov_3d_sub(1, 1) * u_(1) + varcov_3d_sub(1, 2) * u_(2) + varcov_3d_sub(1, 3) * u_(3)
+                y(2) = varcov_3d_sub(2, 1) * u_(1) + varcov_3d_sub(2, 2) * u_(2) + varcov_3d_sub(2, 3) * u_(3)
+                y(3) = varcov_3d_sub(3, 1) * u_(1) + varcov_3d_sub(3, 2) * u_(2) + varcov_3d_sub(3, 3) * u_(3)
+                y_len = sqrt(y(1) ** 2 + y(2) ** 2 + y(3) ** 2)
+                u_(1) = y(1) / y_len
+                u_(2) = y(2) / y_len
+                u_(3) = y(3) / y_len
+    !                print *, '> l =', l
+    !                print *, '> y =', y
+    !                print *, '> u_ =', u_
+            end do
+
+            y(1) = varcov_3d_sub(1, 1) * u_(1) + varcov_3d_sub(1, 2) * u_(2) + varcov_3d_sub(1, 3) * u_(3)
+            y(2) = varcov_3d_sub(2, 1) * u_(1) + varcov_3d_sub(2, 2) * u_(2) + varcov_3d_sub(2, 3) * u_(3)
+            y(3) = varcov_3d_sub(3, 1) * u_(1) + varcov_3d_sub(3, 2) * u_(2) + varcov_3d_sub(3, 3) * u_(3)
+
+            !            print *, '> y =', y
+
+            ev_mul(o, 1) = u_(1)
+            ev_mul(o, 2) = u_(2)
+            ev_mul(o, 3) = u_(3)
+            lambda_mul(o) = (y(1) * u_(1) + y(2) * u_(2) + y(3) * u_(3)) / (u_(1) ** 2 + u_(2) ** 2 + u_(3) ** 2)
+
+            do m = 1, 3
+                do n = 1, 3
+                    varcov_3d_sub(m, n) = varcov_3d_sub(m, n) - lambda_mul(o) * u_(m) * u_(n)
+                end do
+            end do
+
+            print *, 'lambda_mul', o, ': ', lambda_mul(o)
+            print *, 'ev_mul: ', ev_mul(o, 1), ev_mul(o, 2), ev_mul(o, 3)
+        end do
+    end subroutine multivariate_pca
 end program temp1
