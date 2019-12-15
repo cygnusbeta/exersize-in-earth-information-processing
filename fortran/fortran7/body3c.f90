@@ -7,7 +7,7 @@ program temp1
     real :: sum_ave, sum_2nd_moment, sum_cov, cov_, x_minus_ave_1, x_minus_ave_2, sum_y_f, var, f_i, sum_s_e
     real, dimension (nk, 2) :: a_mul, c, lambda ! lambda: [k, λ_1,2]
     real, dimension (nk, 2, 2) :: s, s_inv, varcov, z ! z: [k, λ_1,2, z_1,2]
-    real, dimension (3, 3) :: varcov_3d
+    real, dimension (3, 3) :: varcov_3d, varcov_3d_stdzn
 
     open (11, file = '../fortran7/body.csv', status = 'old')
     do i = 1, np
@@ -207,7 +207,7 @@ program temp1
     end do
 
     print *, ''
-    print *, '- multivariate pca (標準化なし) -'
+    print *, '- multivariate pca (non-standardized) -'
     print *, '(x: 身長, y: 手の大きさ, z: 足の大きさ)'
 !    print *, 'np', np
 !    print *, 'real(np - 1.0)', real(np - 1.0)
@@ -224,6 +224,25 @@ program temp1
     varcov_3d(2, 3) = varcov_3d(3, 2)
 
     call multivariate_pca(varcov_3d)
+
+    print *, ''
+    print *, '- multivariate pca (standardized) -'
+    print *, '(x: 身長, y: 手の大きさ, z: 足の大きさ)'
+    !    print *, 'np', np
+    !    print *, 'real(np - 1.0)', real(np - 1.0)
+    !    print *, 'std', std
+    !    print *, 'nk', nk
+    varcov_3d_stdzn(1, 1) = std(1) ** 2 * real(np) / real(np - 1.0) / (std(1) ** 2 * real(np) / real(np - 1.0))
+    varcov_3d_stdzn(2, 1) = cov(1) * real(np) / real(np - 1.0) / (std(1) * std(2) * real(np) / real(np - 1.0))
+    varcov_3d_stdzn(3, 1) = cov(3) * real(np) / real(np - 1.0) / (std(3) * std(1) * real(np) / real(np - 1.0))
+    varcov_3d_stdzn(2, 2) = std(2) ** 2 * real(np) / real(np - 1.0) / (std(2) ** 2 * real(np) / real(np - 1.0))
+    varcov_3d_stdzn(3, 2) = cov(2) * real(np) / real(np - 1.0) / (std(2) * std(3) * real(np) / real(np - 1.0))
+    varcov_3d_stdzn(3, 3) = std(3) ** 2 * real(np) / real(np - 1.0) / (std(3) ** 2 * real(np) / real(np - 1.0))
+    varcov_3d_stdzn(1, 2) = varcov_3d_stdzn(2, 1)
+    varcov_3d_stdzn(1, 3) = varcov_3d_stdzn(3, 1)
+    varcov_3d_stdzn(2, 3) = varcov_3d_stdzn(3, 2)
+
+    call multivariate_pca(varcov_3d_stdzn)
 
     stop
 
