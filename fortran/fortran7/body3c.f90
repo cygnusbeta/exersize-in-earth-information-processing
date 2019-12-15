@@ -5,8 +5,8 @@ program temp1
     real, dimension (np, nk) :: x, x_minus_ave
     real, dimension (nk) :: ave, std, cov, a, b, rho, r2, r, b_mul, det_s, s_t, s_e, r2_mul, r_mul, r2_mul_adjusted, rho_par ! cov: [x1x2, x2x3, x3x1]
     real :: sum_ave, sum_2nd_moment, sum_cov, cov_, x_minus_ave_1, x_minus_ave_2, sum_y_f, var, f_i, sum_s_e
-    real, dimension (nk, 2) :: a_mul, c, lambda ! lambda: [k, λ_1,2]
-    real, dimension (nk, 2, 2) :: s, s_inv, varcov, z ! z: [k, λ_1,2, z_1,2]
+    real, dimension (nk, 2) :: a_mul, c
+    real, dimension (nk, 2, 2) :: s, s_inv, varcov
     real, dimension (3, 3) :: varcov_3d, varcov_3d_stdzn
 
     open (11, file = '../fortran7/body.csv', status = 'old')
@@ -190,21 +190,7 @@ program temp1
     print *, 's = ', s
     print *, 'varcov = ', varcov
 
-    do k = 1, nk
-        lambda(k, 1) = ((varcov(k, 1, 1) + varcov(k, 2, 2)) + sqrt(((varcov(k, 1, 1) + varcov(k, 2, 2)) ** 2 - 4 * &
-                (varcov(k, 1, 1) * varcov(k, 2, 2) - varcov(k, 2, 1) * varcov(k, 1, 2))))) / 2
-        lambda(k, 2) = ((varcov(k, 1, 1) + varcov(k, 2, 2)) - sqrt(((varcov(k, 1, 1) + varcov(k, 2, 2)) ** 2 - 4 * &
-                (varcov(k, 1, 1) * varcov(k, 2, 2) - varcov(k, 2, 1) * varcov(k, 1, 2))))) / 2
-
-        print *, ''
-        print *, 'k: ', k
-        do j = 1, 2
-            z(k, j, 1) = -1 * varcov(k, 1, 2) / sqrt(varcov(k, 1, 2) ** 2 + (varcov(k, 1, 1) - lambda(k, j)) ** 2)
-            z(k, j, 2) = (varcov(k, 1, 1) - lambda(k, j)) / sqrt(varcov(k, 1, 2) ** 2 + (varcov(k, 1, 1) - lambda(k, j)) ** 2)
-            print *, 'lambda', j, ': ', lambda(k, j)
-            print *, 'z: ', z(k, j, 1), z(k, j, 2)
-        end do
-    end do
+    call pca(varcov)
 
     print *, ''
     print *, '- multivariate pca (non-standardized) -'
@@ -247,6 +233,35 @@ program temp1
     stop
 
 contains
+    subroutine pca(varcov_intent)
+        implicit none
+        real, dimension (nk, 2) :: lambda ! lambda: [k, λ_1,2]
+        real, dimension (nk, 2, 2) :: varcov_sub, z ! z: [k, λ_1,2, z_1,2]
+        real, dimension (nk, 2, 2), intent(in) :: varcov_intent
+
+        varcov_sub = varcov_intent
+
+        do k = 1, nk
+            lambda(k, 1) = ((varcov_sub(k, 1, 1) + varcov_sub(k, 2, 2)) + sqrt(((varcov_sub(k, 1, 1) + &
+                    varcov_sub(k, 2, 2)) ** 2 - 4 * (varcov_sub(k, 1, 1) * varcov_sub(k, 2, 2) - &
+                    varcov_sub(k, 2, 1) * varcov_sub(k, 1, 2))))) / 2
+            lambda(k, 2) = ((varcov_sub(k, 1, 1) + varcov_sub(k, 2, 2)) - sqrt(((varcov_sub(k, 1, 1) + &
+                    varcov_sub(k, 2, 2)) ** 2 - 4 * (varcov_sub(k, 1, 1) * varcov_sub(k, 2, 2) - &
+                    varcov_sub(k, 2, 1) * varcov_sub(k, 1, 2))))) / 2
+
+            print *, ''
+            print *, 'k: ', k
+            do j = 1, 2
+                z(k, j, 1) = -1 * varcov_sub(k, 1, 2) / sqrt(varcov_sub(k, 1, 2) ** 2 + &
+                        (varcov_sub(k, 1, 1) - lambda(k, j)) ** 2)
+                z(k, j, 2) = (varcov_sub(k, 1, 1) - lambda(k, j)) / sqrt(varcov_sub(k, 1, 2) ** 2 + &
+                        (varcov_sub(k, 1, 1) - lambda(k, j)) ** 2)
+                print *, 'lambda', j, ': ', lambda(k, j)
+                print *, 'z: ', z(k, j, 1), z(k, j, 2)
+            end do
+        end do
+    end subroutine pca
+
     subroutine multivariate_pca(varcov_3d_intent)
         implicit none
         integer :: o, l, m, n
