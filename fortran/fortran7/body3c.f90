@@ -6,7 +6,7 @@ program temp1
     real, dimension (nk) :: ave, std, cov, a, b, rho, r2, r, b_mul, det_s, s_t, s_e, r2_mul, r_mul, r2_mul_adjusted, rho_par ! cov: [x1x2, x2x3, x3x1]
     real :: sum_ave, sum_2nd_moment, sum_cov, cov_, x_minus_ave_1, x_minus_ave_2, sum_y_f, var, f_i, sum_s_e
     real, dimension (nk, 2) :: a_mul, c
-    real, dimension (nk, 2, 2) :: s, s_inv, varcov
+    real, dimension (nk, 2, 2) :: s, s_inv, varcov, varcov_stdzn
     real, dimension (3, 3) :: varcov_3d, varcov_3d_stdzn
 
     open (11, file = '../fortran7/body.csv', status = 'old')
@@ -182,7 +182,7 @@ program temp1
     end do
 
     print *, ''
-    print *, '- pca -'
+    print *, '- pca (non-standardized) -'
     print *, 'k = 1: (x = x: 身長, y = y: 手の大きさ)'
     print *, 'k = 2: (x = y: 手の大きさ, y = z: 足の大きさ)'
     print *, 'k = 3: (x = z: 足の大きさ, y = x: 身長)'
@@ -191,6 +191,42 @@ program temp1
     print *, 'varcov = ', varcov
 
     call pca(varcov)
+
+    print *, ''
+    print *, '- pca (standardized) -'
+    print *, 'k = 1: (x = x: 身長, y = y: 手の大きさ)'
+    print *, 'k = 2: (x = y: 手の大きさ, y = z: 足の大きさ)'
+    print *, 'k = 3: (x = z: 足の大きさ, y = x: 身長)'
+    print *, '(np - 1) = ', np - 1
+
+    do k = 1, nk
+        k_plus_1 = k + 1
+        k_plus_2 = k + 2
+        if (k_plus_1 > 3) then
+            k_plus_1 = k_plus_1 - 3
+        end if
+        if (k_plus_2 > 3) then
+            k_plus_2 = k_plus_2 - 3
+        end if
+
+        k_y = k
+        k_x1 = k_plus_1
+        k_x2 = k_plus_2
+
+        varcov_stdzn(k, 1, 1) = varcov(k, 1, 1) / (std(k_x1) ** 2 * real(np) / real(np - 1))
+        varcov_stdzn(k, 2, 1) = varcov(k, 2, 1) / (std(k_plus_1) * std(k_plus_2) * real(np) / real(np - 1))
+        varcov_stdzn(k, 1, 2) = varcov_stdzn(k, 2, 1)
+        varcov_stdzn(k, 2, 2) = varcov(k, 2, 2) / (std(k_x2) ** 2 * real(np) / real(np - 1))
+    end do
+
+!    s(k, 1, 1) = std(k_x1) ** 2 * real(np)
+!    s(k, 2, 1) = cov(k_plus_1) * real(np) ! cov(x1, x2): cov(x2x3) = cov(k_plus_1)
+!    s(k, 1, 2) = s(k, 2, 1)
+!    s(k, 2, 2) = std(k_x2) ** 2 * real(np)
+
+    print *, 'varcov_stdzn = ', varcov_stdzn
+
+    call pca(varcov_stdzn)
 
     print *, ''
     print *, '- multivariate pca (non-standardized) -'
