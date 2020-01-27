@@ -27,7 +27,7 @@ print(pca$sdev)
 print('固有ベクトル')
 print(pca$rotation)
 
-print('主成分得点')
-print(pca$x)
+print('主成分得点(最初の6件のみ)')
+head(pca$x)
 
 biplot(pca)
