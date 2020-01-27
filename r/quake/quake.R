@@ -1,0 +1,15 @@
+x <- read.csv('quake/query.csv')
+x <- data.frame(x$longitude, x$depth, x$mag)
+colnames(x) <- c("longitude", "depth", "mag")
+# print(x)
+means <- apply(x, 2, mean)
+print('means')
+print(means)
+
+stds <- apply(x, 2, sd)
+print('stds')
+print(stds)
+
+plot(x$longitude, x$depth)
+plot(x$longitude, x$mag)
+plot(x$depth, x$mag)
